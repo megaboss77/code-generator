@@ -46,30 +46,49 @@ public class generator {
             }
             i++;
         }
-        //System.out.println(data);
-        System.out.println("import com.fasterxml.jackson.annotation.JsonInclude;\n" +
+
+        String importText = "import com.fasterxml.jackson.annotation.JsonInclude;\n" +
                 "import com.fasterxml.jackson.annotation.JsonProperty;\n" +
                 "import com.fasterxml.jackson.annotation.JsonPropertyOrder;\n" +
                 "import io.swagger.annotations.ApiModel;\n" +
                 "import io.swagger.annotations.ApiModelProperty;\n" +
                 "import javax.validation.constraints.NotNull;\n \n"+
-                "public class accountLoan {");
-
-        Map valuesMap = new HashMap();
-        valuesMap.put("animal", "quick brown fox");
-        valuesMap.put("target", "lazy dog");
-        String templateString = "The ${animal} jumped over the ${target}.";
-        //what
-        StringSubstitutor sub = new StringSubstitutor(valuesMap);
-        String resolvedString = sub.replace(templateString);
-
+                "public class accountLoan {";
+//    public String getCardId() {
+//    return cardId;
+//    }
+//
+//    }
+//    public void setCardId(String cardId) {
+//        this.cardId = cardId;
 
         BufferedWriter writer = new BufferedWriter(new FileWriter("/Users/nattapat/Downloads/TEST3.txt"));
         Map<Integer, List<String>> filtered = data.entrySet().stream().filter(x->x.getKey()>=3).collect(Collectors.toMap(a->a.getKey(), a->a.getValue()));
+        List<String> combinedFieldList = new ArrayList<>();
+        List<String> combinedGetSetList = new ArrayList<>();
+        String combinedString ="";
+        String combinedGetSet ="";
+        filtered.forEach((x,y) -> combinedFieldList.add("private "+firstCharToUpperCase(y.get(2))+' '+y.get(1)+';'));
+        filtered.forEach((x,y) -> combinedGetSetList.add(String.format("public void get%s(){%n return %s; %n } %n public %s set%s"
+                ,firstCharToUpperCase(y.get(1))
+                ,y.get(1)
+                ,firstCharToUpperCase(y.get(2))
+                ,firstCharToUpperCase(y.get(1))
+                )));
+        System.out.println(combinedFieldList.size());
+        for(int j = 0;j<combinedFieldList.size();j++){
+            combinedString=combinedString+"\n"+combinedFieldList.get(j);
+            combinedGetSet+="\n"+combinedGetSetList.get(j);
+        }
+        //get and set
 
-        filtered.forEach((x,y) -> System.out.println("private "+firstCharToUpperCase(y.get(2))+' '+y.get(1)+';'));
-        System.out.println("}");
-        writer.write(filtered.toString());
+
+
+
+
+        String combinedModel = importText+combinedString+combinedGetSet+"\n}";
+        System.out.println(combinedModel);
+        writer.write(combinedModel);
         writer.close();
 
     }
